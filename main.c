@@ -111,6 +111,37 @@ int main()
 	return 0;
 }
 
+int str_to_int(char *str)
+{
+	int i=0,tmp=0;
+	while(str[i]!='\0')
+	{
+		/*using ascii code to do this comparison*/
+		if (str[i]>='0'&&str[i]<='9') tmp = tmp*10 + (str[i]-'0');
+		else return -1;
+		i++;
+	}
+	return tmp;
+}
+void itoa(int n, char *buffer){
+	if (n == 0)
+		*(buffer++) = '0';
+	else {		
+		int a=10000;
+		if (n < 0) {
+			*(buffer++) = '-';
+			n = -n;
+		}
+		while (a!=0) {
+			int i = n / a;
+			if (i != 0) {
+				*(buffer++) = '0'+(i%10);;
+		}
+		a/=10;
+	}
+}
+	*buffer = '\0';
+}
 void vApplicationTickHook()
 {
 }
