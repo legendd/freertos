@@ -78,23 +78,11 @@ void read_romfs_task(void *pvParameters)
 	
 	while (1);
 }
-/*
-void end_romfs_task(void *pvParameters)
+void test_romfs_task(void *pvParameters)
 {
-	char buf1[128];
-        size_t count1;
-        int fd = fs_open("/romfs/test_end.txt", 0, O_RDONLY);
-        do {
-                //Read from /romfs/test.txt to buffer
-                count1 = fio_read(fd, buf1, sizeof(buf1));
-
-                //Write buffer to fd 1 (stdout, through uart)
-                fio_write(1, buf1, count1);
-        } while (count1);
-
-        while (1);
+	char str_temp[10] = "test task";
+	fio_write(1,str_temp,9);
 }
-*/
 int main()
 {
 	init_rs232();
@@ -114,6 +102,9 @@ int main()
 	xTaskCreate(read_romfs_task,
 	            (signed portCHAR *) "Read romfs",
 	            512 /* stack size */, NULL, tskIDLE_PRIORITY + 2, NULL);
+	xTaskCreate(test_romfs_task,
+	            (signed portCHAR *) "test task",
+	            512 /* stack size */, NULL, tskIDLE_PRIORITY + 3, NULL);
 	/* Start running the tasks. */
 	vTaskStartScheduler();
 
