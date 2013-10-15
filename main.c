@@ -78,10 +78,10 @@ void read_romfs_task(void *pvParameters)
 	
 	while (1);
 }
-void test_romfs_task(void *pvParameters)
+void shell_task(void *pvParameters)
 {
-	char str_temp[10] = "test task";
-	fio_write(1,str_temp,9);
+	char str_temp[21] = "Inplemrnt Shell Task";
+	fio_write(1,str_temp,20);
 }
 int main()
 {
@@ -102,8 +102,8 @@ int main()
 	xTaskCreate(read_romfs_task,
 	            (signed portCHAR *) "Read romfs",
 	            512 /* stack size */, NULL, tskIDLE_PRIORITY + 2, NULL);
-	xTaskCreate(test_romfs_task,
-	            (signed portCHAR *) "test task",
+	xTaskCreate(shell_task,
+	            (signed portCHAR *) "Inplemrnt Shell Task",
 	            512 /* stack size */, NULL, tskIDLE_PRIORITY + 3, NULL);
 	/* Start running the tasks. */
 	vTaskStartScheduler();
