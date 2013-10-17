@@ -17,7 +17,8 @@ extern const char _sromfs;
 static void setup_hardware();
 
 volatile xSemaphoreHandle serial_tx_wait_sem = NULL;
-
+volatile xSemaphoreHandle serial_rx_queue = NULL;
+char ch;
 
 /* IRQ handler to handle USART2 interruptss (both transmit and receive
  * interrupts). */
@@ -35,6 +36,11 @@ void USART2_IRQHandler()
 		/* Diables the transmit interrupt. */
 		USART_ITConfig(USART2, USART_IT_TXE, DISABLE);
 		/* If this interrupt is for a receive... */
+	}
+	else if (USART_GetITStatus(USART2, USART_IT_RXNE) != RESET){
+		ch = USART_ReceiveData(USART2); 
+		if(!xQueueSendToBackFromISR(serial_rx_queue, &ch, &xHigherPriorityTaskWoken))
+			while(1);
 	}
 	else {
 		/* Only transmit and receive interrupts should be enabled.
@@ -63,6 +69,19 @@ void send_byte(char ch)
 	USART_ITConfig(USART2, USART_IT_TXE, ENABLE);
 }
 
+char recv_byte(){
+	USART_ITConfig(USART2, USART_IT_RXNE, ENABLE);
+	char msg;
+	/*xQueueReceive & xQueueCreate are defined in queue.h
+	portBASE_TYPE xQueueReceive(
+	                            xQueueHandle xQueue,
+                               void *pvBuffer,
+                               portTickType xTicksToWait
+                            );*/
+	while(!xQueueReceive(serial_rx_queue, &msg, portMAX_DELAY));
+	return msg;
+}
+/*
 void read_romfs_task(void *pvParameters)
 {
 	char buf[128];
@@ -77,11 +96,15 @@ void read_romfs_task(void *pvParameters)
 	} while (count);
 	
 	while (1);
-}
+}*/
 void shell_task(void *pvParameters)
 {
-	char str_temp[21] = "Inplemrnt Shell Task";
-	fio_write(1,str_temp,20);
+	char str_temp[21] = "Implement Shell Task";
+	char buf[128];
+	while(1){
+		fio_write(1,str_temp,sizeof(str_temp));
+		int count = fio_read(0, buf, 127);
+	}
 }
 int main()
 {
@@ -98,13 +121,16 @@ int main()
 	 * the RS232. */
 	vSemaphoreCreateBinary(serial_tx_wait_sem);
 
+	serial_rx_queue = xQueueCreate(1, sizeof(ch));
+
 	/* Create a task to output text read from romfs. */
-	xTaskCreate(read_romfs_task,
-	            (signed portCHAR *) "Read romfs",
-	            512 /* stack size */, NULL, tskIDLE_PRIORITY + 2, NULL);
+//	xTaskCreate(read_romfs_task,
+//	            (signed portCHAR *) "Read romfs",
+//	            512 /* stack size */, NULL, tskIDLE_PRIORITY + 2, NULL);
+
 	xTaskCreate(shell_task,
-	            (signed portCHAR *) "Inplemrnt Shell Task",
-	            512 /* stack size */, NULL, tskIDLE_PRIORITY + 3, NULL);
+	            (signed portCHAR *) "Implement Shell Task",
+	            512 /* stack size */, NULL, tskIDLE_PRIORITY + 2, NULL);
 	/* Start running the tasks. */
 	vTaskStartScheduler();
 
