@@ -10,7 +10,9 @@
 /* Filesystem includes */
 #include "filesystem.h"
 #include "fio.h"
-
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 extern const char _sromfs;
 
 static void setup_hardware();
@@ -81,6 +83,26 @@ char recv_byte(){
         while(!xQueueReceive(serial_rx_queue, &msg, portMAX_DELAY));
         return msg;
 }
+void itoa(int n, char *buffer){
+        if (n == 0)
+                *(buffer++) = '0';
+        else {                
+                int a=10000;
+                if (n < 0) {
+                        *(buffer++) = '-';
+                        n = -n;
+                }
+                while (a!=0) {
+                        int i = n / a;
+                        if (i != 0) {
+                                *(buffer++) = '0'+(i%10);;
+                }
+                a/=10;
+        }
+}
+        *buffer = '\0';
+}
+
 void hello_show(){
 	char hello[] = "Hello!\n\rWelcome to Legendd World!\r\n";
 	fio_write(1,hello,sizeof(hello));
@@ -94,7 +116,9 @@ void shell_task(void *pvParameters)
         char compensate[] = {'0','\0'};
         char ch;
         char hello[] = "hello\r";
-        char str_temp[22] = "Implement Shell Task:";
+        char echo[] = "echo \r";
+        char error[] = "\r\n'command not found'\n";
+        char str_temp[24] = "\rImplement Shell Task:";
         char buf[128];
         while(1){
                 fio_write(1,str_temp,22);
@@ -119,6 +143,14 @@ void shell_task(void *pvParameters)
                 if(!strcmp(str,hello)){
                 	hello_show();
                 }
+                else if(!strncmp(str,echo,5)){  
+					char *str_echo = strdel(str,0,5);
+			
+						fio_write(1, &next, 2);
+						fio_write(1, &str_echo, sizeof(str_echo));	
+				}
+				else			
+				fio_write(1, &error, sizeof(error));
         }
 }
 
@@ -160,25 +192,7 @@ int str_to_int(char *str)
         }
         return tmp;
 }
-void itoa(int n, char *buffer){
-        if (n == 0)
-                *(buffer++) = '0';
-        else {                
-                int a=10000;
-                if (n < 0) {
-                        *(buffer++) = '-';
-                        n = -n;
-                }
-                while (a!=0) {
-                        int i = n / a;
-                        if (i != 0) {
-                                *(buffer++) = '0'+(i%10);;
-                }
-                a/=10;
-        }
-}
-        *buffer = '\0';
-}
+
 void vApplicationTickHook()
 {
 }
