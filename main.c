@@ -87,11 +87,10 @@ void hello_show(){
 }
 void shell_task(void *pvParameters)
 {
-        //int fdout,fdin;
        int curr_char;
         int done;
         char str[100];
-        char next[] = {'\n','\r','\0'};
+        char next[] = {'\n','\r'};
         char compensate[] = {'0','\0'};
         char ch;
         char hello[] = "hello\r";
@@ -99,25 +98,24 @@ void shell_task(void *pvParameters)
         char buf[128];
         while(1){
                 fio_write(1,str_temp,22);
-                int count = fio_read(0, buf, 127);
+                //int count = fio_read(0, buf, 127);
                 curr_char = 0;
                 done = 0;
-                do{
+                while(!done){
                 	ch = recv_byte();
-                	if (curr_char >= 98 || (ch=='\r') || (ch=='\n'))
+                	if (curr_char >= 98 || (ch == '\r') || (ch == '\n'))
                 	{
                 		str[curr_char] = '\r';
                 		str[curr_char+1] = '\0';
-                		fio_write(1, &next, 3);
+                		fio_write(1, &next, 2);
                 		done = -1;
                 	}
                 	else{
                 		compensate[0] = ch;
                 		str[curr_char++] = ch;
-                		fio_write(1, &compensate, 2);
+                		fio_write(1, &compensate, 1);
                 	}
-                }while(!done);
-                //fio_write(1, str, curr_char+1+1);
+                }
                 if(!strcmp(str,hello)){
                 	hello_show();
                 }
