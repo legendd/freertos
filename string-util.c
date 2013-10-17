@@ -47,14 +47,6 @@ void *memcpy(void *dest, const void *src, size_t n)
 	
 	return ret;
 }
-size_t strlen(str)
-	const char *str;
-{
-	register const char *s;
-
-	for (s = str; *s; ++s);
-	return(s - str);
-}
 char *strchr(const char *s, int c)
 {
 	for (; *s && *s != c; s++);
@@ -75,19 +67,4 @@ char *strncpy(char *dest, const char *src, size_t n)
 	unsigned char *d = dest;
 	while (n-- && (*d++ = *s++));
 	return dest;
-}
-int strcmp(const char* s1, const char* s2)
-{
-    while(*s1 && (*s1==*s2))
-        s1++,s2++;
-    return *(const unsigned char*)s1-*(const unsigned char*)s2;
-}
-int strncmp(const char *s1, const char *s2, size_t n)
-{
-    for ( ; n > 0; s1++, s2++, --n)
-	if (*s1 != *s2)
-	    return ((*(unsigned char *)s1 < *(unsigned char *)s2) ? -1 : +1);
-	else if (*s1 == '\0')
-	    return 0;
-    return 0;
 }
